@@ -518,6 +518,7 @@ class Dpd_Baltic_Admin {
 						}
 
 						$order->add_order_note( $barcode->dpd_barcode . ' ' . $status . '. <a href="https://tracking.dpd.de/status/en_US/parcel/' . $barcode->dpd_barcode . '" target="_blank">' . __( 'Track parcel', 'woo-shipping-dpd-baltic' ) . '</a>' );
+						do_action('woo_shipping_dpd_baltic/tracking_code', $barcode->dpd_barcode);
 					} else {
 						$order->add_order_note( $barcode->dpd_barcode . ' ' . __( 'The parcel is not scanned by DPD yet', 'woo-shipping-dpd-baltic' ) . '. <a href="https://tracking.dpd.de/status/en_US/parcel/' . $barcode->dpd_barcode . '" target="_blank">' . __( 'Track parcel', 'woo-shipping-dpd-baltic' ) . '</a>' );
 					}
