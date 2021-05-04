@@ -2,5 +2,5 @@
 {
   "name": "codelight-eu/woo-shipping-dpd-baltic",
   "type": "wordpress-plugin",
-  "description": "Forked plugin of DPD Baltic with support for sending tracking in email (https://wordpress.org/plugins/woo-shipping-dpd-baltic/) ",
+  "description": "Forked plugin of DPD Baltic with support for sending tracking in email (https://wordpress.org/plugins/woo-shipping-dpd-baltic/) "
 }
