@@ -518,7 +518,8 @@ class Dpd_Baltic_Admin {
 						}
 
 						$order->add_order_note( $barcode->dpd_barcode . ' ' . $status . '. <a href="https://tracking.dpd.de/status/en_US/parcel/' . $barcode->dpd_barcode . '" target="_blank">' . __( 'Track parcel', 'woo-shipping-dpd-baltic' ) . '</a>' );
-						do_action('woo_shipping_dpd_baltic/tracking_code', $barcode->dpd_barcode);
+						do_action('woo_shipping_dpd_baltic/get_parcel_status', $response->parcel_status, $status, $barcode->dpd_barcode, $order);
+
 					} else {
 						$order->add_order_note( $barcode->dpd_barcode . ' ' . __( 'The parcel is not scanned by DPD yet', 'woo-shipping-dpd-baltic' ) . '. <a href="https://tracking.dpd.de/status/en_US/parcel/' . $barcode->dpd_barcode . '" target="_blank">' . __( 'Track parcel', 'woo-shipping-dpd-baltic' ) . '</a>' );
 					}
@@ -883,6 +884,8 @@ class Dpd_Baltic_Admin {
 				'dpd_barcode' => $barcode
 			] );
 
+            do_action('woo_shipping_dpd_baltic/set_order_barcode', $barcode, $order);
+
 			$message = sprintf( __( 'DPD Tracking number: %s', 'woo-shipping-dpd-baltic' ), $barcode );
 			$order->add_order_note( $message, false, true );
 		}
@@ -1207,14 +1210,14 @@ class Dpd_Baltic_Admin {
 	    var today = new Date();
 		var tomorrow = new Date();
 		tomorrow.setDate(today.getDate()+1);
-	    
+
 		jQuery(".dpd_datepicker").datepicker({
 			dateFormat : "yy-mm-dd",
 			firstDay: 1,
 			minDate: today,
 			beforeShowDay: jQuery.datepicker.noWeekends
 		});
-		
+
 		jQuery(".dpd_datepicker_upcoming").datepicker({
 			dateFormat : "yy-mm-dd",
 			firstDay: 1,
