@@ -419,6 +419,7 @@ class Dpd_Baltic_Admin {
 	public function do_print_parcel_label( $order ) {
 		$shipments        = $this->order_shipment_creation( [ $order ] );
 		$tracking_numbers = '';
+        $tracking_numbers_array = [];
 
 		foreach ( $shipments as $order_id => $data ) {
 			if ( $data['status'] == 'err' ) {
@@ -426,13 +427,14 @@ class Dpd_Baltic_Admin {
 			} elseif ( $data['status'] == 'ok' ) {
 				foreach ( $data['barcodes'] as $barcode ) {
 					$tracking_numbers .= $barcode->dpd_barcode . '|';
+					$tracking_numbers_array[] = $barcode->dpd_barcode;
 				}
 			}
 		}
 
 		if ( $tracking_numbers ) {
             $order_id = $order->get_id();
-            $result = $this->print_order_parcel_label( $tracking_numbers, [$order_id] );
+            $result = $this->print_order_parcel_label( $tracking_numbers, [$order_id => $tracking_numbers_array] );
 
             if ( $result == null ) {
                 $order->add_order_note( __( 'Cannot print DPD label: Parcel not found', 'woo-shipping-dpd-baltic' ) );
@@ -442,9 +444,11 @@ class Dpd_Baltic_Admin {
 
 	public function do_multiple_print_parcel_label( $ids ) {
 		$tracking_numbers = '';
+        $mapped_tracking_numbers = [];
 
 		foreach ( $ids as $id ) {
 			$order = wc_get_order( $id );
+            $mapped_tracking_numbers[$id] = '';
 
 			if ( $order ) {
 				$shipments = $this->order_shipment_creation( [ $order ] );
@@ -453,16 +457,19 @@ class Dpd_Baltic_Admin {
 					if ( $data['status'] == 'err' ) {
 //				$error_message .= __('Error in order: ', 'woo-shipping-dpd-baltic') . $order_id . '. <strong>' . $data['errlog'] . '</strong><br />';
 					} elseif ( $data['status'] == 'ok' ) {
+                        $tracking_numbers_array = [];
 						foreach ( $data['barcodes'] as $barcode ) {
 							$tracking_numbers .= $barcode->dpd_barcode . '|';
+							$tracking_numbers_array[] = $barcode->dpd_barcode;
 						}
+                        $mapped_tracking_numbers[$id] = $tracking_numbers_array;
 					}
 				}
 			}
 		}
 
 		if ( $tracking_numbers ) {
-            $this->print_order_parcel_label( $tracking_numbers, $ids );
+            $this->print_order_parcel_label( $tracking_numbers, $mapped_tracking_numbers );
 		}
 
 		return null;
@@ -831,7 +838,7 @@ class Dpd_Baltic_Admin {
 		return $tracking_barcodes;
 	}
 
-	private function print_order_parcel_label( $tracking_number = null, $orderIds ) {
+	private function print_order_parcel_label( $tracking_number = null, $mapped_tracking_numbers ) {
 		$label_size = get_option( 'dpd_label_size' );
 
 		$response = self::http_client( 'parcelPrint_', [
@@ -845,8 +852,8 @@ class Dpd_Baltic_Admin {
 		if ( $json_response && $json_response->status == 'err' ) {
 			return null;
 		} else {
-            foreach ($orderIds as $orderId) {
-                do_action('woo_shipping_dpd_baltic/print_parcel_label', $orderId);
+            foreach ($mapped_tracking_numbers as $order_id => $tracking_number) {
+                do_action('woo_shipping_dpd_baltic/print_parcel_label', $order_id, $tracking_number);
             }
 			$this->get_labels_output( $response );
 		}
